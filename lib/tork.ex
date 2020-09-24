@@ -1,18 +1,9 @@
 defmodule Tork do
-  @moduledoc """
-  Documentation for `Tork`.
-  """
+  def start() do
+    {:ok, socket} = :gen_tcp.listen(4040, [:binary, packet: :line, active: false, reuseaddr: true])
 
-  @doc """
-  Hello world.
+    {:ok, conn} = :gen_tcp.accept(socket)
 
-  ## Examples
-
-      iex> Tork.hello()
-      :world
-
-  """
-  def hello do
-    :world
+    IO.gets("")
   end
 end
