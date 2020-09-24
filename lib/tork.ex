@@ -5,8 +5,16 @@ defmodule Tork do
     {:ok, conn} = :gen_tcp.accept(socket)
 
     :gen_tcp.send(conn, "Welcome!\n")
-    {:ok, reply} = :gen_tcp.recv(conn, 0)
-    :gen_tcp.send(conn, "You said:\n#{reply}\n")
+    recv(conn)
     :gen_tcp.close(conn)
+  end
+
+  defp recv(conn) do
+    case :gen_tcp.recv(conn, 0) do
+      {:ok, reply} ->
+        :gen_tcp.send(conn, "You said:\n#{reply}\n")
+        recv(conn)
+      {:error, err} -> {:error, err}
+    end
   end
 end
