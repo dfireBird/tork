@@ -4,12 +4,9 @@ defmodule Tork do
 
     {:ok, conn} = :gen_tcp.accept(socket)
 
-    send(conn)
-  end
-
-  defp send(conn) do
-    :gen_tcp.send(conn, "Hello\n")
-    :timer.sleep(2000)
-    send(conn)
+    :gen_tcp.send(conn, "Welcome!\n")
+    {:ok, reply} = :gen_tcp.recv(conn, 0)
+    :gen_tcp.send(conn, "You said:\n#{reply}\n")
+    :gen_tcp.close(conn)
   end
 end
