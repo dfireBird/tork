@@ -4,6 +4,7 @@ defmodule Tork do
 
     {:ok, conn} = :gen_tcp.accept(socket)
 
-    IO.gets("")
+    :gen_tcp.send(conn, "Hello tcp")
+    :gen_tcp.close(conn)
   end
 end
