@@ -7,8 +7,7 @@ defmodule Tork.Application do
 
   def start(_type, _args) do
     children = [
-      # Starts a worker by calling: Tork.Worker.start_link(arg)
-      # {Tork.Worker, arg}
+      {Task, fn -> Tork.start end}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
