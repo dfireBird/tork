@@ -7,6 +7,7 @@ defmodule Tork.Application do
 
   def start(_type, _args) do
     children = [
+      {Tork.Map, %{}},
       {Task, fn -> Tork.start end}
     ]
 
