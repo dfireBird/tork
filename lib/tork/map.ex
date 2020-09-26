@@ -1,22 +1,23 @@
 defmodule Tork.Map do
   use Agent
-  def start_link(initial_value) do
-    Agent.start_link(fn -> initial_value end, name: __MODULE__)
+  def start_link(opts) do
+    name = Keyword.fetch!(opts, :name)
+    Agent.start_link(fn -> %{} end, name: name)
   end
 
-  def get(key) do
-    Agent.get(Tork.Map, &Map.get(&1, key))
+  def get(pid, key) do
+    Agent.get(pid, &Map.get(&1, key))
   end
 
-  def set(key, value) do
-    Agent.update(Tork.Map, &Map.put(&1, key, value))
+  def set(pid, key, value) do
+    Agent.update(pid, &Map.put(&1, key, value))
   end
 
-  def clear() do
-    Agent.update(Tork.Map, fn _ -> %{} end)
+  def clear(pid) do
+    Agent.update(pid, fn _ -> %{} end)
   end
 
-  def all() do
-    Agent.get(Tork.Map, &Map.values(&1))
+  def all(pid) do
+    Agent.get(pid, &Map.values(&1))
   end
 end

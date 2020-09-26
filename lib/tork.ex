@@ -27,16 +27,17 @@ defmodule Tork do
     command = String.trim(command)
     case String.split(command, " ", parts: 3) do
       ["GET", key] ->
-        case Tork.Map.get(key) do
+        case Tork.Map.get(Tork.Map, key) do
           nil -> :gen_tcp.send(conn, "ERROR undefined\n")
           value -> :gen_tcp.send(conn, "ANSWER #{value}\n")
         end
 
       ["SET", key, value] ->
-        Tork.Map.set(key, value); :gen_tcp.send(conn, "OK\n")
-      ["CLEAR"] -> Tork.Map.clear(); :gen_tcp.send(conn, "OK\n")
+        Tork.Map.set(Tork.Map, key, value); :gen_tcp.send(conn, "OK\n")
+      ["CLEAR"] -> Tork.Map.clear(Tork.Map); :gen_tcp.send(conn, "OK\n")
       ["ALL"] ->
-        :gen_tcp.send(conn, "#{Enum.join(Tork.Map.all(), "\n")}"); :gen_tcp.send(conn, "\nOK\n")
+        :gen_tcp.send(conn, "#{Enum.join(Tork.Map.all(Tork.Map), "\n")}")
+        :gen_tcp.send(conn, "\nOK\n")
       _ -> :gen_tcp.send(conn, "UNKNOWN COMMAND\n")
     end
   end
