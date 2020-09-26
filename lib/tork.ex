@@ -9,8 +9,8 @@ defmodule Tork do
     {:ok, conn} = :gen_tcp.accept(socket)
 
     :gen_tcp.send(conn, "Welcome!\n")
-    recv(conn)
-    :gen_tcp.close(conn)
+    {:ok, pid} = Task.Supervisor.start_child(Tork.TaskSupervisor, fn -> recv(conn) end)
+    :ok = :gen_tcp.controlling_process(conn, pid)
     accept(socket)
   end
 
@@ -19,6 +19,7 @@ defmodule Tork do
       {:ok, command} ->
         parse(conn, command)
         recv(conn)
+      {:error, :closed} -> exit(:shutdown)
       {:error, err} -> {:error, err}
     end
   end
