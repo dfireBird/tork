@@ -6,10 +6,11 @@ defmodule Tork.Application do
   use Application
 
   def start(_type, _args) do
+    port = String.to_integer(System.get_env("PORT") || "4040")
     children = [
       {Task.Supervisor, name: Tork.TaskSupervisor},
       {Tork.Map, name: Tork.Map},
-      {Task, fn -> Tork.start end}
+      {Task, fn -> Tork.start(port) end}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

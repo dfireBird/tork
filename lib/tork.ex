@@ -1,6 +1,6 @@
 defmodule Tork do
-  def start() do
-    {:ok, socket} = :gen_tcp.listen(4040, [:binary, packet: :line, active: false, reuseaddr: true])
+  def start(port) do
+    {:ok, socket} = :gen_tcp.listen(port, [:binary, packet: :line, active: false, reuseaddr: true])
 
     accept(socket)
   end
@@ -15,31 +15,35 @@ defmodule Tork do
   end
 
   defp recv(conn) do
-    case :gen_tcp.recv(conn, 0) do
-      {:ok, command} ->
-        parse(conn, command)
-        recv(conn)
-      {:error, :closed} -> exit(:shutdown)
-      {:error, err} -> {:error, err}
-    end
+    msg =
+      with {:ok, data} <- read_line(conn),
+           {:ok, command} <- Tork.Verb.parse(data),
+           do: Tork.Verb.run(command, Tork.Map)
+    write_line(conn, msg)
+    recv(conn)
   end
 
-  defp parse(conn, command) do
-    command = String.trim(command)
-    case String.split(command, " ", parts: 3) do
-      ["GET", key] ->
-        case Tork.Map.get(Tork.Map, key) do
-          nil -> :gen_tcp.send(conn, "ERROR undefined\n")
-          value -> :gen_tcp.send(conn, "ANSWER #{value}\n")
-        end
+  defp read_line(socket) do
+    :gen_tcp.recv(socket, 0)
+  end
 
-      ["SET", key, value] ->
-        Tork.Map.set(Tork.Map, key, value); :gen_tcp.send(conn, "OK\n")
-      ["CLEAR"] -> Tork.Map.clear(Tork.Map); :gen_tcp.send(conn, "OK\n")
-      ["ALL"] ->
-        :gen_tcp.send(conn, "#{Enum.join(Tork.Map.all(Tork.Map), "\n")}")
-        :gen_tcp.send(conn, "\nOK\n")
-      _ -> :gen_tcp.send(conn, "UNKNOWN COMMAND\n")
-    end
+  defp write_line(socket, {:ok, text}) do
+    :gen_tcp.send(socket, text)
+  end
+
+  # Known error send it to client
+  defp write_line(socket, {:error, :unknown_command}) do
+    :gen_tcp.send(socket, "UNKNOWN COMMAND\n")
+  end
+
+  # The client closed the connection, exit cleanly
+  defp write_line(_socket, {:error, :closed}) do
+    exit(:shutdown)
+  end
+
+  # Unknow error, notify the client and exit
+  defp write_line(socket, {:error, error}) do
+    :gen_tcp.send(socket, "ERROR\n")
+    exit(error)
   end
 end
