@@ -1,4 +1,13 @@
 defmodule Tork.Verb do
+  @moduledoc """
+  Modules that parses the data sent by client, return messages related
+  to commands and runs the command.
+  """
+
+
+  @doc ~S"""
+  Parses the given `data` into command.
+  """
   def parse(data) do
     data = String.trim(data)
     case String.split(data, " ", parts: 3) do
@@ -9,6 +18,11 @@ defmodule Tork.Verb do
       _ -> {:error, :unknown_command}
     end
   end
+
+  @doc """
+  Runs the given `command`.
+  """
+  def run(command, pid)
 
   def run({:get, key}, pid) do
     case Tork.Map.get(pid, key) do

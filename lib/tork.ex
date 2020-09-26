@@ -1,4 +1,12 @@
 defmodule Tork do
+  @moduledoc """
+  The main module for the application which starts the server,
+  accept clients and send and receive message.
+  """
+
+  @doc """
+  Starts accepting client on the given `port`.
+  """
   def start(port) do
     {:ok, socket} = :gen_tcp.listen(port, [:binary, packet: :line, active: false, reuseaddr: true])
 

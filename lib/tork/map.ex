@@ -1,5 +1,9 @@
 defmodule Tork.Map do
   use Agent
+  @moduledoc """
+  A agent keeping map state for the server.
+  """
+
   def start_link(opts) do
     name = Keyword.fetch!(opts, :name)
     Agent.start_link(fn -> %{} end, name: name)
