@@ -10,7 +10,7 @@ defmodule Tork.Application do
     children = [
       {Task.Supervisor, name: Tork.TaskSupervisor},
       {Tork.Map, name: Tork.Map},
-      {Task, fn -> Tork.start(port) end}
+      Supervisor.child_spec({Task, fn -> Tork.start(port) end}, restart: :permanent)
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
