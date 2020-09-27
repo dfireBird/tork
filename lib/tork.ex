@@ -27,7 +27,10 @@ defmodule Tork do
     msg =
       with {:ok, data} <- read_line(conn),
            {:ok, command} <- Tork.Method.parse(data),
-           do: Tork.Method.run(command)
+      do: Tork.Method.run(command)
+
+    Tork.Headers.accept_headers(conn)
+
     write_line(conn, msg)
    end
 
