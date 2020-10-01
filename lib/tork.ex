@@ -41,7 +41,9 @@ defmodule Tork do
   # Get request reply
   defp write_line(socket, {:ok, version, body}) do
     :gen_tcp.send(socket, "#{version} 200 OK\r\n")
-    :gen_tcp.send(socket, "\r\n") # Should send headers here later
+    :gen_tcp.send(socket, "Content-Length: #{byte_size(body)}\r\n")
+    :gen_tcp.send(socket, "Server: Tork/0.0.1 (Unix)\r\n")
+    :gen_tcp.send(socket, "\r\n")
     :gen_tcp.send(socket, body)
     :gen_tcp.close(socket)
   end
