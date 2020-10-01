@@ -20,7 +20,7 @@ defmodule Tork.Method do
       ["OPTIONS", resource, version] -> {:ok, {:options, resource, version}}
       ["TRACE", resource, version] -> {:ok, {:trace, resource, version}}
       ["CONNECT", resource, version] -> {:ok, {:connect, resource, version}}
-      _ -> {:error, :unknown_command}
+      [_, _, version] -> {:error, {:unknown_command, version}}
     end
   end
 
@@ -30,7 +30,10 @@ defmodule Tork.Method do
   def run(command)
 
   def run({:get, resource, version}) do
-    Logger.info("Got GET request for #{resource} with #{version}")
+    case File.read("./www#{resource}") do
+      {:ok, body} -> {:ok, version, body}
+      {:error, _} -> {:http_error, version, 404}
+    end
   end
 
   def run({:put, resource, version}) do

@@ -19,7 +19,7 @@ defmodule Tork do
     {:ok, conn} = :gen_tcp.accept(socket)
 
     {:ok, pid} = Task.Supervisor.start_child(Tork.TaskSupervisor, fn -> recv(conn) end)
-    :ok = :gen_tcp.controlling_process(conn, pid)
+    :gen_tcp.controlling_process(conn, pid)
     accept(socket)
   end
 
@@ -38,9 +38,26 @@ defmodule Tork do
     :gen_tcp.recv(socket, 0)
   end
 
+  # Get request reply
+  defp write_line(socket, {:ok, version, body}) do
+    :gen_tcp.send(socket, "#{version} 200 OK\r\n")
+    :gen_tcp.send(socket, "\r\n") # Should send headers here later
+    :gen_tcp.send(socket, body)
+    :gen_tcp.close(socket)
+  end
+
+  defp write_line(socket, {:http_error, version, 404}) do
+    :gen_tcp.send(socket, "#{version} 404 NOT FOUND\r\n")
+    :gen_tcp.send(socket, "\r\n")
+    :gen_tcp.send(socket, "Sorry I don't have that file\r\n")
+    :gen_tcp.close(socket)
+  end
+
   # Known error send it to client
-  defp write_line(socket, {:error, :unknown_command}) do
-    Logger.error("Unknown Method")
+  defp write_line(socket, {:error, {:unknown_command, version}}) do
+    :gen_tcp.send(socket, "#{version} 400 Bad Request\r\n")
+    :gen_tcp.send(socket, "\r\n")
+    :gen_tcp.send(socket, "Sorry I don't understand the request\r\n")
     :gen_tcp.close(socket)
   end
 
@@ -54,9 +71,4 @@ defmodule Tork do
     :gen_tcp.send(socket, "ERROR\n")
     exit(error)
   end
-
-  defp write_line(socket, _) do
-    :gen_tcp.close(socket)
-  end
-
 end
