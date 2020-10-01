@@ -4,16 +4,23 @@ defmodule Tork.Headers do
   Module that parses headers.
   """
   def accept_headers(conn) do
+    headers = %{}
+    accept_headers(conn, headers)
+  end
+
+  def accept_headers(conn, headers) do
     case read_line(conn) do
-      {:ok, "\r\n"} -> :ok
-      {:ok, data} -> parse(data); accept_headers(conn)
+      {:ok, "\r\n"} -> {:ok, headers}
+      {:ok, data} ->
+        headers = parse(data, headers)
+        accept_headers(conn, headers)
     end
   end
 
-  defp parse(data) do
+  defp parse(data, headers) do
     data = String.trim(data)
     case String.split(data, ": ") do
-      [key, value] -> [key, value]
+      [key, value] -> Map.put(headers, key, value)
       _ -> Logger.error("Malformed error recieved")
     end
   end
