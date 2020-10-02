@@ -6,9 +6,17 @@ defmodule Tork do
   """
 
   @doc """
-  Starts accepting client on the given `port`.
+  Starts accepting client on the `port` from the config.json.
   """
-  def start(port) do
+  def start() do
+    {:ok, config_data} = File.read("config.json")
+    {:ok, config} = Jason.decode(config_data)
+
+    port = String.to_integer(Map.get(config, "port") || System.get_env("PORT") || "4040")
+    web_directory = Map.get(config, "web_directory") || System.get_env("DIRECTORY") || "www"
+    Tork.Map.set(Tork.Map, "port", port)
+    Tork.Map.set(Tork.Map, "web_directory", web_directory)
+
     {:ok, socket} = :gen_tcp.listen(port, [:binary, packet: :line, active: false, reuseaddr: true])
     Logger.info("Accepting connections on the port #{port}")
 

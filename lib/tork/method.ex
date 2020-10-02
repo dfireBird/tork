@@ -30,7 +30,8 @@ defmodule Tork.Method do
   def run(command)
 
   def run({:get, resource, version}) do
-    case File.read("./www#{resource}") do
+    web_directory = Tork.Map.get(Tork.Map, "web_directory")
+    case File.read("./#{web_directory}#{resource}") do
       {:ok, body} -> {:ok, version, body}
       {:error, _} -> {:http_error, version, 404}
     end
