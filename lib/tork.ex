@@ -8,7 +8,7 @@ defmodule Tork do
   @doc """
   Starts accepting client on the `port` from the config.json.
   """
-  def start() do
+  def start do
     {:ok, config_data} = File.read("config.json")
     {:ok, config} = Jason.decode(config_data)
 
@@ -80,5 +80,9 @@ defmodule Tork do
   defp write_line(socket, {:error, error}) do
     :gen_tcp.send(socket, "ERROR\n")
     exit(error)
+  end
+
+  defp write_line(socket, _) do
+    :gen_tcp.close(socket)
   end
 end

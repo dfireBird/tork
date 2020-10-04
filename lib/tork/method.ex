@@ -5,22 +5,24 @@ defmodule Tork.Method do
   to commands and runs the command.
   """
 
-
   @doc ~S"""
   Parses the given `data` into command.
   """
+  @methods %{"GET" => :get,
+             "PUT" => :put,
+             "HEAD" => :head,
+             "POST" => :post,
+             "DELETE" => :delete,
+             "OPTIONS" => :options,
+             "TRACE" => :trace,
+             "CONNECT" => :connect}
   def parse(data) do
     Logger.info("Message recieved: #{data}")
-    case String.split(data) do
-      ["GET", resource, version] -> {:ok, {:get, resource, version}}
-      ["PUT", resource, version] -> {:ok, {:put, resource, version}}
-      ["HEAD", resource, version] -> {:ok, {:head, resource, version}}
-      ["POST", resource, version] -> {:ok, {:post, resource, version}}
-      ["DELETE", resource, version] -> {:ok, {:delete, resource, version}}
-      ["OPTIONS", resource, version] -> {:ok, {:options, resource, version}}
-      ["TRACE", resource, version] -> {:ok, {:trace, resource, version}}
-      ["CONNECT", resource, version] -> {:ok, {:connect, resource, version}}
-      [_, _, version] -> {:error, {:unknown_command, version}}
+    [method, resource, version] = String.split(data)
+    if Map.get(@methods, method) do
+      {:ok, {Map.get(@methods, method), resource, version}}
+    else
+      {:error, {:unknown_command, version}}
     end
   end
 
