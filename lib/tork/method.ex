@@ -33,6 +33,7 @@ defmodule Tork.Method do
 
   def run({:get, resource, version}) do
     web_directory = Tork.Map.get(Tork.Map, "web_directory")
+    resource = String.replace(resource, "../", "")
     case File.read("./#{web_directory}#{resource}") do
       {:ok, body} -> {:ok, version, body}
       {:error, _} -> {:http_error, version, 404}
